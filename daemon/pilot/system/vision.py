@@ -338,8 +338,17 @@ async def _ocr_tesseract_cli(img_bytes: bytes, language: str) -> str:
 
 async def _ocr_easyocr(img_bytes: bytes, language: str) -> str:
     from io import BytesIO
+    import sys
 
-    import easyocr
+    try:
+        import easyocr
+    except ImportError:
+        logger.info("easyocr not installed, auto-installing cross-platform fallback...")
+        code, out, err = await run_command([sys.executable, "-m", "pip", "install", "easyocr"], timeout=300)
+        if code != 0:
+            raise RuntimeError(f"Failed to auto-install easyocr: {err.strip()}")
+        import easyocr
+
     import numpy as np
     from PIL import Image
 
@@ -518,8 +527,19 @@ async def screen_element_map(
 
     try:
         from io import BytesIO
+        import sys
 
-        import easyocr
+        try:
+            import easyocr
+        except ImportError:
+            logger.info("easyocr not installed, auto-installing cross-platform fallback for element mapping...")
+            code, out, err = await run_command([sys.executable, "-m", "pip", "install", "easyocr"], timeout=300)
+            if code != 0:
+                return (
+                    f"Install easyocr for element detection: pip install easyocr (Auto-install failed: {err.strip()})"
+                )
+            import easyocr
+
         import numpy as np
         from PIL import Image
 
