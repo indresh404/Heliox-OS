@@ -359,9 +359,7 @@ class Planner:
             )
 
         # --- "open <app>" (known apps) ---
-        app_match = re.match(
-            r"^(?:open|launch|start|run)\s+([\w\s]+)$", text
-        )
+        app_match = re.match(r"^(?:open|launch|start|run)\s+([\w\s]+)$", text)
         if app_match:
             app_name = app_match.group(1).strip()
             # Only fast-path for clearly an app name (not a complex sentence)
