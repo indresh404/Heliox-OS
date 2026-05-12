@@ -1502,8 +1502,8 @@ class PilotServer:
         Returns:
             A dict with plugins list from registry.json.
         """
-        import os
         import json as json_module
+        import os
 
         repo_root = Path(__file__).parent.parent.parent
         registry_path = repo_root / "plugins" / "registry.json"
