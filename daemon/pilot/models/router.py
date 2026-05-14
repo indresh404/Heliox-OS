@@ -54,7 +54,7 @@ class ModelRouter:
         temperature: float = 0.1,
     ) -> str:
         """Generate a completion from the best available model.
-        
+
         Flow:
         1. Determine model and provider
         2. Check cache for exact match

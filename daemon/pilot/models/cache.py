@@ -82,7 +82,7 @@ class LLMCache:
             """
         )
 
-       
+
         await self._conn.execute(
             "CREATE INDEX IF NOT EXISTS idx_cache_key ON llm_cache(prompt_hash, system_hash, model, provider, temperature, json_mode)"
         )
