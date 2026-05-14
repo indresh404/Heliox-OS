@@ -470,7 +470,6 @@ class Planner:
                     await self._orchestrator.delegate_to_subagents(user_input)
                     logger.info("[Planner] Delegated to sub-agents for complex prompt.")
 
-
             return self._parse_response(raw_response, user_input)
 
         except Exception as e:
