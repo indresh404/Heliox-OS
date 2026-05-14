@@ -600,11 +600,6 @@ class Planner:
                 explanation=explanation,
                 raw_input=user_input,
             )
-            return ActionPlan(
-                error="All actions failed to parse",
-                explanation=explanation,
-                raw_input=user_input,
-            )
 
         # Post-process: fix common LLM structural errors
         actions = self._postprocess_actions(actions)
