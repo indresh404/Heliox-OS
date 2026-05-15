@@ -2,12 +2,12 @@
 
 from __future__ import annotations
 
+import logging
 import os
 import sys
 from dataclasses import dataclass, field
 from pathlib import Path
 from typing import Any
-import logging
 
 if sys.version_info >= (3, 12):
     import tomllib
@@ -92,7 +92,7 @@ class PilotConfig:
     first_run_complete: bool = False
 
     @classmethod
-    def load(cls) -> "PilotConfig":
+    def load(cls) -> PilotConfig:
         """Load config from disk, creating defaults if missing."""
         config = cls()
         if CONFIG_FILE.exists():
@@ -102,7 +102,7 @@ class PilotConfig:
                 config = _merge_config(config, raw)
             except Exception as e:
                 logger.error(f"Failed to load config.toml: {e}. Falling back to safe defaults.")
-                
+
         if RESTRICTIONS_FILE.exists():
             raw = tomllib.loads(RESTRICTIONS_FILE.read_text(encoding="utf-8"))
             config.restrictions = _parse_restrictions(raw)
@@ -117,28 +117,44 @@ class PilotConfig:
         if restrictions:
             RESTRICTIONS_FILE.write_text(tomli_w.dumps(restrictions), encoding="utf-8")
 
+
 logger = logging.getLogger("pilot.config")
+
 
 def _validate_config_types(raw: dict) -> None:
     """Validate that the user's config has no typos and uses correct types."""
     expected_types = {
         "model": {
-            "provider": str, "ollama_base_url": str, "ollama_model": str,
-            "mode": str, "gpu_memory_limit_mb": int, "idle_unload_seconds": int,
-            "cloud_provider": str, "cloud_model": str, "rate_limit_enabled": bool,
-            "rate_limit_rpm": int, "rate_limit_burst": int,
+            "provider": str,
+            "ollama_base_url": str,
+            "ollama_model": str,
+            "mode": str,
+            "gpu_memory_limit_mb": int,
+            "idle_unload_seconds": int,
+            "cloud_provider": str,
+            "cloud_model": str,
+            "rate_limit_enabled": bool,
+            "rate_limit_rpm": int,
+            "rate_limit_burst": int,
             # NEW: PR #98 Budget Keys
-            "budget_enabled": bool, "budget_monthly_limit_usd": float,
+            "budget_enabled": bool,
+            "budget_monthly_limit_usd": float,
         },
         "security": {
-            "root_enabled": bool, "confirm_tier2": bool, "dry_run": bool,
-            "snapshot_on_destructive": bool, "snapshot_backend": str,
-            "snapshot_retention_count": int, "snapshot_retention_days": int,
+            "root_enabled": bool,
+            "confirm_tier2": bool,
+            "dry_run": bool,
+            "snapshot_on_destructive": bool,
+            "snapshot_backend": str,
+            "snapshot_retention_count": int,
+            "snapshot_retention_days": int,
             "unrestricted_shell": bool,
         },
         "server": {
-            "host": str, "port": int, "auth_token": str,
-        }
+            "host": str,
+            "port": int,
+            "auth_token": str,
+        },
     }
 
     for section, expected_keys in expected_types.items():
@@ -150,13 +166,14 @@ def _validate_config_types(raw: dict) -> None:
                     error_msg = f"Invalid config key found: '{section}.{actual_key}'. Please check for typos."
                     logger.error(error_msg)
                     raise ValueError(error_msg)
-                
+
                 # 2. Catch Wrong Types
                 expected_type = expected_keys[actual_key]
                 if not isinstance(actual_value, expected_type):
                     error_msg = f"Invalid type: '{section}.{actual_key}' must be {expected_type.__name__}, got {type(actual_value).__name__}."
                     logger.error(error_msg)
                     raise ValueError(error_msg)
+
 
 def _merge_config(config: PilotConfig, raw: dict[str, Any]) -> PilotConfig:
     if "model" in raw:
