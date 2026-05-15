@@ -29,6 +29,8 @@
     overscan?: number;
     /** Slot — receives (item, index). */
     item: Snippet<[T, number]>;
+    /** Optional footer rendered below all items. */
+    footer?: Snippet;
   }
 
   let {
@@ -36,6 +38,7 @@
     estimatedItemHeight = 80,
     overscan = 5,
     item: itemSnippet,
+    footer: footerSnippet,
   }: Props<T> = $props();
 
   // ── Internal state ─────────────────────────────────────────────────────────
@@ -101,6 +104,9 @@
       // Items removed — truncate
       heights = heights.slice(0, len);
     }
+    
+    // Recalculate window so new items can be rendered
+    tick().then(recalcWindow);
   });
 
   // ── Scroll-to-bottom on new messages ──────────────────────────────────────
@@ -246,11 +252,16 @@
 
   <!-- Bottom spacer: keeps scrollbar thumb proportional -->
   <div class="vl-spacer" style="height: {paddingBottom}px;" aria-hidden="true"></div>
+
+  {#if footerSnippet}
+    {@render footerSnippet()}
+  {/if}
 </div>
 
 <style>
   .vl-scroller {
-    height: 100%;
+    flex: 1;
+    min-height: 0;
     overflow-y: auto;
     /* Inherit padding from the parent .results rule in App.svelte */
     padding: 12px 16px;

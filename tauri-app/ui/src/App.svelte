@@ -222,21 +222,23 @@
               {#snippet item(msg)}
                 {@render messageBlock(msg)}
               {/snippet}
-            </VirtualList>
-
-            {#if $session.loading}
-              <ExecutionGraph />
               
-              <div class="message system">
-                <div class="msg-header">
-                  <span class="msg-label">HELIOX</span>
-                  <span class="phase-badge">{$session.phase || "thinking"}</span>
-                </div>
-                <span class="msg-text loading-dots">
-                  {$session.phase ? `${$session.phase}` : "Thinking"}
-                </span>
-              </div>
-            {/if}
+              {#snippet footer()}
+                {#if $session.loading}
+                  <ExecutionGraph />
+                  
+                  <div class="message system">
+                    <div class="msg-header">
+                      <span class="msg-label">HELIOX</span>
+                      <span class="phase-badge">{$session.phase || "thinking"}</span>
+                    </div>
+                    <span class="msg-text loading-dots">
+                      {$session.phase ? `${$session.phase}` : "Thinking"}
+                    </span>
+                  </div>
+                {/if}
+              {/snippet}
+            </VirtualList>
           {/if}
         </div>
 
