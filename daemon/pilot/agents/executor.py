@@ -403,14 +403,23 @@ class Executor:
             if cancel_event and cancel_event.is_set():
                 logger.info("Executor: cancel_event set — stopping at action %d", i)
                 break
-
             await self._audit.log_action_start(action, plan_id)
 
         batches = self._analyze_dependencies(plan.actions)
+        logger.info("Executing %d action(s) in %d parallel batch(es)", len(plan.actions), len(batches))
 
         for batch_idx, batch in enumerate(batches):
             if not batch:
                 continue
+
+            if cancel_event and cancel_event.is_set():
+                logger.info("Executor: cancel_event set — stopping at batch %d", batch_idx)
+                for remaining_batch in batches[batch_idx + 1:]:
+                    for action in remaining_batch:
+                        results.append(
+                            ActionResult(action=action, success=False, error="Skipped due to cancel request")
+                        )
+                break
 
             logger.info("Batch %d: executing %d action(s) in parallel", batch_idx + 1, len(batch))
 
@@ -455,7 +464,6 @@ class Executor:
                         results.append(
                             ActionResult(action=action, success=False, error="Skipped due to earlier batch failure")
                         )
-                break
 
         return results
 
