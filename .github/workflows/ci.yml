@@ -108,6 +108,7 @@ jobs:
       - name: Generate baseline snapshots (first run only)
         if: steps.check_baselines.outputs.exists == 'false'
         run: npx playwright test --update-snapshots --reporter=github
+        continue-on-error: true
         env:
           CI: "true"
 

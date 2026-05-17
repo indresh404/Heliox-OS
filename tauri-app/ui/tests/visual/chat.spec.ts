@@ -59,17 +59,9 @@ test.describe("Chat Interface", () => {
   });
 
   test("user message renders correctly", async ({ page }) => {
-    // Inject a user message directly into the session store via JS
-    await page.evaluate(() => {
-      const event = new CustomEvent("__test_inject_message__", {
-        detail: {
-          type: "user",
-          text: "Show system information",
-          timestamp: 1_000_000,
-        },
-      });
-      window.dispatchEvent(event);
-    });
+    // Type a command and press Enter
+    await page.fill(".command-input input", "Show system information");
+    await page.keyboard.press("Enter");
 
     // Give Svelte a tick to re-render
     await page.waitForTimeout(200);
@@ -79,15 +71,25 @@ test.describe("Chat Interface", () => {
   });
 
   test("error message renders correctly", async ({ page }) => {
+    await page.fill(".command-input input", "Trigger error");
+    await page.keyboard.press("Enter");
+    
+    // Send the error response back through the mock WS
     await page.evaluate(() => {
-      const event = new CustomEvent("__test_inject_message__", {
-        detail: {
-          type: "error",
-          text: "Connection to daemon lost. Please restart.",
-          timestamp: 1_000_001,
-        },
-      });
-      window.dispatchEvent(event);
+      const ws = (window as any).__mock_ws__;
+      if (ws && ws.onmessage) {
+        // Find the last sent message ID to reply to it
+        const lastSend = (window as any).__last_ws_send__;
+        const msgId = lastSend ? lastSend.id : 1;
+        
+        ws.onmessage({
+          data: JSON.stringify({
+            jsonrpc: "2.0",
+            id: msgId,
+            result: { status: "error", explanation: "Connection to daemon lost. Please restart." }
+          })
+        });
+      }
     });
 
     await page.waitForTimeout(200);

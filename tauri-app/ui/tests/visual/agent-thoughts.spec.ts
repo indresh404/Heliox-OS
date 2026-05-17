@@ -15,31 +15,11 @@
  */
 
 import { test, expect, type Page } from "@playwright/test";
-import { gotoApp, clickTab, freezeAnimations } from "./helpers";
+import { gotoApp, clickTab, freezeAnimations, emitNotification } from "./helpers";
 
 // ---------------------------------------------------------------------------
-// Helper: dispatch a daemon notification event into the page
+// Tests
 // ---------------------------------------------------------------------------
-
-async function emitNotification(
-  page: Page,
-  method: string,
-  params: Record<string, unknown>
-): Promise<void> {
-  await page.evaluate(
-    ({ method, params }) => {
-      // The app registers handlers via onNotification() which listens for
-      // a custom DOM event dispatched by the daemon API module.
-      window.dispatchEvent(
-        new CustomEvent("__heliox_notification__", {
-          detail: { method, params },
-        })
-      );
-    },
-    { method, params }
-  );
-  await page.waitForTimeout(80);
-}
 
 // ---------------------------------------------------------------------------
 // Tests

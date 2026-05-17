@@ -33,15 +33,54 @@ export async function mockTauriIpc(page: Page): Promise<void> {
       },
     };
 
-    // Prevent WebSocket connection attempts from throwing
+    // Mock WebSocket to simulate daemon connection and intercept messages
     const OrigWS = window.WebSocket;
     (window as any).WebSocket = class extends OrigWS {
+      onopen: any;
+      onmessage: any;
+      onerror: any;
+      onclose: any;
+      
       constructor(url: string, protocols?: string | string[]) {
-        // Redirect to a no-op URL that will silently fail to connect
-        super("ws://localhost:0", protocols);
+        super("ws://localhost:0", protocols); // no-op URL
+        (window as any).__mock_ws__ = this;
+        
+        // Auto-connect after a tiny delay
+        setTimeout(() => {
+          if (this.onopen) this.onopen(new Event("open"));
+        }, 10);
+      }
+      
+      send(data: string) {
+        // Intercept sent messages and store them globally for tests to inspect
+        (window as any).__last_ws_send__ = JSON.parse(data);
+      }
+      
+      close() {
+        if (this.onclose) this.onclose(new Event("close"));
       }
     };
   });
+}
+
+/**
+ * Helper to emit a daemon notification (e.g. status updates)
+ */
+export async function emitNotification(
+  page: Page,
+  method: string,
+  params: Record<string, unknown>
+): Promise<void> {
+  await page.evaluate(
+    ({ method, params }) => {
+      const ws = (window as any).__mock_ws__;
+      if (ws && ws.onmessage) {
+        ws.onmessage({ data: JSON.stringify({ method, params }) });
+      }
+    },
+    { method, params }
+  );
+  await page.waitForTimeout(80);
 }
 
 /**
