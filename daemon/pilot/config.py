@@ -28,13 +28,7 @@ CONFIG_DIR = _xdg("XDG_CONFIG_HOME", ".config") / "pilot"
 DATA_DIR = _xdg("XDG_DATA_HOME", ".local/share") / "pilot"
 STATE_DIR = _xdg("XDG_STATE_HOME", ".local/state") / "pilot"
 RUNTIME_DIR = (
-    Path(
-        os.environ.get(
-            "XDG_RUNTIME_DIR",
-            f"/run/user/{os.getuid() if hasattr(os, 'getuid') else 1000}"
-        )
-    )
-    / "pilot"
+    Path(os.environ.get("XDG_RUNTIME_DIR", f"/run/user/{os.getuid() if hasattr(os, 'getuid') else 1000}")) / "pilot"
 )
 CONFIG_FILE = CONFIG_DIR / "config.toml"
 RESTRICTIONS_FILE = CONFIG_DIR / "restrictions.toml"
@@ -416,6 +410,4 @@ def ensure_dirs() -> None:
         test_file.unlink()
     except Exception as e:
         logger.error(f"DATA_DIR is not writable: {DATA_DIR}")
-        raise RuntimeError(
-            f"DATA_DIR is not writable: {DATA_DIR}"
-        ) from e
+        raise RuntimeError(f"DATA_DIR is not writable: {DATA_DIR}") from e
