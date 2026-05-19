@@ -965,9 +965,7 @@ class PilotServer:
                 verification = await self._verifier.verify(plan, results)
             last_verification = verification
             if _original_plan is not None and _successful_results:
-                all_results = PlanDiffer.merge_results(
-                    _successful_results, results, _original_plan, verification
-                )
+                all_results = PlanDiffer.merge_results(_successful_results, results, _original_plan, verification)
 
             if verification.passed:
                 if emit:
